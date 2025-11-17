@@ -1,11 +1,20 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.tadeu.biolab" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.tadeu.biolab" version="1.0.0"
+
     <name>BioLab</name>
     <description>BioLab Parameter Explorer</description>
-    <author email="ltadeu6@pm.me" href="https://cordova.apache.org">
-        Apache Cordova Team
+    <author email="ltadeu6@pm.me" href="https://github.com/ltadeu6">
+        Lucas Tadeu Marculino
     </author>
+
     <content src="index.html" />
+
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
+
+    <!-- ICON FOR ELECTRON -->
+    <platform name="electron">
+        <icon src="resources/icon.png" width="512" height="512" />
+    </platform>
+
 </widget>

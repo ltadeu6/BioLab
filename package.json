@@ -19,9 +19,15 @@
       "electron"
     ]
   },
-  "win": {
-    "target": [
-      "nsis"
-    ]
+  "build": {
+    "appId": "com.tadeu.biolab",
+    "productName": "BioLab",
+    "directories": {
+      "buildResources": "resources"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico"
+    }
   }
 }
