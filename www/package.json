@@ -1,0 +1,7 @@
+{
+  "name": "biolab",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/demo.mjs && node tests/synthetic-search.mjs"
+  }
+}
