@@ -1,0 +1,615 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <link rel="stylesheet" href="index.css" />
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>BioLab Parameter Explorer</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=800, initial-scale=1" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css"
+      integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv"
+      crossorigin="anonymous"
+    />
+
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js"
+      integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js"
+      integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <header class="hero">
+        <h1>BioLab Parameter Explorer</h1>
+        <div class="hero__text">
+          <p>
+            Parameter Search estimates kinetic parameters for microbial growth
+            and substrate consumption models by fitting time-course
+            measurements of biomass and residual substrate.
+          </p>
+          <p>
+            Fill the experimental table with the sampling times (in hours) and
+            the measured concentrations (g/L). Use the algorithm controls to
+            tune the particle swarm optimization (PSO) strategy—adjust the
+            swarm size, cognitive and social weights, inertia factor, and
+            iteration limit to reflect the variability of your dataset. Model
+            bounds let you constrain feasible ranges for each kinetic
+            parameter before running the search.
+          </p>
+          <p>
+            After clicking <strong>Run search</strong>, the tool evaluates all
+            supported kinetic expressions, displays the PSO progress, and plots
+            the simulated curves against your data. Each card lists the
+            optimized coefficients together with the maintenance term derived
+            from <a href="#ref-pirt">Pirt (1965)</a>, so you can compare how
+            different formulations reproduce the experiment without leaving the
+            page.
+          </p>
+        </div>
+        <figure class="hero__figure">
+          <img
+            src="assets/Variac.svg"
+            alt="Differential balances for biomass growth and substrate uptake"
+          />
+        </figure>
+      </header>
+      <form id="myForm">
+        <div id="dataInputBox" class="box">
+          <details id="dataInput">
+            <summary>Experimental data</summary>
+            <table id="dataTable" class="abnt-table">
+              <thead>
+                <tr>
+                  <th>Time (h)</th>
+                  <th>Substrate (g/L)</th>
+                  <th>Cells (g/L)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div class="table-actions">
+              <button type="button" id="addRow">Add row</button>
+              <button type="button" id="removeRow">Remove row</button>
+            </div>
+          </details>
+        </div>
+
+        <div id="algParamsBox" class="box">
+          <details id="algParams">
+            <summary>Algorithm parameters</summary>
+            <table class="abnt-table alg-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><label for="particles">Swarm size</label></td>
+                  <td><input type="number" id="particles" value="50" /></td>
+                </tr>
+                <tr>
+                  <td><label for="c1">Cognitive weight (c₁)</label></td>
+                  <td>
+                    <input
+                      type="number"
+                      step="0.00001"
+                      id="c1"
+                      value="1.49618"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="c2">Social weight (c₂)</label></td>
+                  <td>
+                    <input
+                      type="number"
+                      step="0.00001"
+                      id="c2"
+                      value="1.49618"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="w">Inertia factor (w)</label></td>
+                  <td>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      id="w"
+                      value="0.7298"
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="iterations">Maximum iterations</label></td>
+                  <td><input type="number" id="iterations" value="150" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+
+        <div id="boundsBox" class="box">
+          <details id="bounds">
+            <summary>Model bounds</summary>
+            <div class="bounds-grid"></div>
+          </details>
+        </div>
+
+        <button type="button" id="runButton">Run search</button>
+
+        <div id="resultsSection" class="hidden">
+          <progress id="progressBar" max="7" value="0"></progress>
+
+          <div class="box">
+            <h2><a href="#ref-aiba">Aiba et al. (1968)</a></h2>
+            <img src="assets/equations/Aiba.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot1"></div>
+            <div id="AibaParam"></div>
+          </div>
+          <div class="box">
+            <h2><a href="#ref-andrews">Andrews (1968)</a></h2>
+            <img src="assets/equations/Andrews.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot2"></div>
+            <div id="AndrewsParam"></div>
+          </div>
+          <div class="box">
+            <h2><a href="#ref-bergter">Bergter (1978)</a></h2>
+            <img src="assets/equations/Bergter.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot3"></div>
+            <div id="BergterParam"></div>
+          </div>
+          <div class="box">
+            <h2><a href="#ref-contois">Contois (1959)</a></h2>
+            <img src="assets/equations/Contois.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot4"></div>
+            <div id="ContoisParam"></div>
+          </div>
+          <div class="box">
+            <h2><a href="#ref-monod">Monod (1949)</a></h2>
+            <img src="assets/equations/Monod.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot5"></div>
+            <div id="MonodParam"></div>
+          </div>
+          <div class="box">
+            <h2><a href="#ref-moser">Moser (1958)</a></h2>
+            <img src="assets/equations/Moser.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot6"></div>
+            <div id="MoserParam"></div>
+          </div>
+          <div class="box">
+            <h2><a href="#ref-tessier">Tessier (1936)</a></h2>
+            <img src="assets/equations/Tessier.svg" />
+            <img src="assets/equations/Pirt.svg" />
+            <div id="Plot7"></div>
+            <div id="TessierParam"></div>
+          </div>
+          <div id="comparison" class="box"></div>
+        </div>
+
+        <div id="references" class="box">
+          <h2>References</h2>
+          <p id="ref-aiba">
+            AIBA, S.; SHODA, M.; NAGATANI, M. Kinetics of product inhibition in
+            alcohol fermentation. <strong>Biotechnology and Bioengineering</strong>,
+            v. 10, n. 6, pp. 845-864, Nov. 1968.
+          </p>
+          <p id="ref-andrews">
+            ANDREWS, John F. A mathematical model for the continuous culture of
+            microorganisms utilizing inhibitory substrates. <strong>Biotechnology
+            and Bioengineering</strong>, v. 10, n. 6, pp. 707-723, Nov. 1968.
+          </p>
+          <p id="ref-bergter">
+            BERGTER, F. Kinetic model of mycelial growth. <strong>Zeitschrift für
+            allgemeine Mikrobiologie</strong>, v. 18, n. 2, pp. 143-145, Jan. 1978.
+          </p>
+          <p id="ref-contois">
+            CONTOIS, D. E. Kinetics of bacterial growth: relationship between
+            population density and specific growth rate of continuous cultures.
+            <strong>Journal of General Microbiology</strong>, v. 21, n. 1,
+            pp. 40-50, Aug. 1959.
+          </p>
+          <p id="ref-monod">
+            MONOD, Jacques. The growth of bacterial cultures. <strong>Annual
+            Review of Microbiology</strong>, v. 3, n. 1, pp. 371-394, 1949.
+          </p>
+          <p id="ref-moser">
+            MOSER, H. <strong>The dynamics of bacterial populations maintained in
+            the chemostat</strong>. Washington, D.C.: Carnegie Institution of
+            Washington, 1958.
+          </p>
+          <p id="ref-pirt">
+            PIRT, S. J. The maintenance energy of bacteria in growing cultures.
+            <strong>Proceedings of the Royal Society of London. Series B.
+            Biological Sciences</strong>, v. 163, n. 991, p. 224-231, 1965.
+          </p>
+          <p id="ref-tessier">
+            TESSIER, G. Les lois quantitatives de la croissance. <strong>Annales
+            de Physiologie et de Physiochimie Biologique</strong>, v. 12,
+            pp. 527-571, 1936.
+          </p>
+        </div>
+
+        <script type="module">
+          import { main } from "./src/search.js";
+
+          const measurementUnits = {
+            time: "h",
+            substrate: "g/L",
+            cells: "g/L",
+          };
+
+          const dataHeader = [
+            `time (${measurementUnits.time})`,
+            `substrate (${measurementUnits.substrate})`,
+            `cells (${measurementUnits.cells})`,
+          ];
+
+          const parameterCatalog = {
+            K_S: {
+              latex: "K_S",
+              unitText: "g/L",
+              unitLatex: "\\mathrm{g\\,L^{-1}}",
+              overrides: {
+                contois: {
+                  unitText: "g_S/g_X",
+                  unitLatex: "\\frac{\\mathrm{g}_{S}}{\\mathrm{g}_{X}}",
+                },
+              },
+            },
+            mu_max: {
+              latex: "\\mu_{max}",
+              unitText: "h⁻¹",
+              unitLatex: "\\mathrm{h^{-1}}",
+            },
+            K_I: {
+              latex: "K_I",
+              unitText: "g/L",
+              unitLatex: "\\mathrm{g\\,L^{-1}}",
+              overrides: {
+                aiba: {
+                  unitText: "L/g",
+                  unitLatex: "\\mathrm{L\\,g^{-1}}",
+                },
+              },
+            },
+            m_S: {
+              latex: "m_S",
+              unitText: "g_S/(g_X·h)",
+              unitLatex: "\\frac{\\mathrm{g}_{S}}{\\mathrm{g}_{X}\\,\\mathrm{h}}",
+            },
+            Y_XS: {
+              latex: "Y_{XS}",
+              unitText: "g_X/g_S",
+              unitLatex: "\\frac{\\mathrm{g}_{X}}{\\mathrm{g}_{S}}",
+            },
+            T: {
+              latex: "T",
+              unitText: "h",
+              unitLatex: "\\mathrm{h}",
+            },
+            n: {
+              latex: "n",
+              unitText: null,
+              unitLatex: null,
+            },
+          };
+
+          const modelParameters = {
+            aiba: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.05, 0.9] },
+              { key: "K_I", bounds: [0.01, 1] },
+              { key: "m_S", bounds: [0.0015, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+            andrews: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.05, 0.9] },
+              { key: "K_I", bounds: [5, 150] },
+              { key: "m_S", bounds: [0.0015, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+            bergter: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.05, 0.9] },
+              { key: "T", bounds: [5, 80] },
+              { key: "m_S", bounds: [0.0015, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+            contois: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.05, 0.9] },
+              { key: "m_S", bounds: [0.0015, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+            monod: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.05, 0.9] },
+              { key: "m_S", bounds: [0.0015, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+            moser: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.05, 0.9] },
+              { key: "n", bounds: [0.8, 2.5] },
+              { key: "m_S", bounds: [0.0015, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+            tessier: [
+              { key: "K_S", bounds: [0.005, 2] },
+              { key: "mu_max", bounds: [0.2, 0.9] },
+              { key: "m_S", bounds: [0.005, 0.05] },
+              { key: "Y_XS", bounds: [0.3, 0.7] },
+            ],
+          };
+
+          function getParamDisplayInfo(paramKey, modelKey) {
+            const baseInfo = parameterCatalog[paramKey];
+            if (!baseInfo) {
+              throw new Error(`Unknown parameter: ${paramKey}`);
+            }
+            const override = baseInfo.overrides?.[modelKey];
+            if (!override) {
+              return baseInfo;
+            }
+            return { ...baseInfo, ...override };
+          }
+
+          const demoData = [
+            dataHeader,
+            [0, 3.0, 0.05],
+            [1, 2.9835, 0.0595],
+            [2, 2.964, 0.0708],
+            [3, 2.9406, 0.0843],
+            [4, 2.9129, 0.1003],
+            [5, 2.8799, 0.1194],
+            [6, 2.8407, 0.1421],
+            [7, 2.794, 0.1691],
+            [8, 2.7385, 0.2011],
+            [9, 2.6725, 0.2393],
+            [10, 2.5942, 0.2846],
+            [11, 2.501, 0.3384],
+            [12, 2.3905, 0.4023],
+            [13, 2.2594, 0.478],
+            [14, 2.104, 0.5678],
+            [15, 1.9202, 0.674],
+          ];
+
+          const defaultDataUrl = "assets/dados.json";
+
+          const resultsSection = document.getElementById("resultsSection");
+
+          function populateTable(data) {
+            const tbody = document.querySelector("#dataTable tbody");
+            tbody.innerHTML = "";
+            for (let i = 1; i < data.length; i++) {
+              const row = document.createElement("tr");
+              for (let j = 0; j < 3; j++) {
+                const cell = document.createElement("td");
+                const input = document.createElement("input");
+                input.type = "number";
+                input.value = data[i][j];
+                cell.appendChild(input);
+                row.appendChild(cell);
+              }
+              tbody.appendChild(row);
+            }
+          }
+
+          function addRow() {
+            const tbody = document.querySelector("#dataTable tbody");
+            const row = document.createElement("tr");
+            for (let i = 0; i < 3; i++) {
+              const cell = document.createElement("td");
+              const input = document.createElement("input");
+              input.type = "number";
+              input.value = 0;
+              cell.appendChild(input);
+              row.appendChild(cell);
+            }
+            tbody.appendChild(row);
+          }
+
+          function removeRow() {
+            const tbody = document.querySelector("#dataTable tbody");
+            if (tbody.lastElementChild) {
+              tbody.removeChild(tbody.lastElementChild);
+            }
+          }
+
+          function collectData() {
+            const data = [dataHeader];
+            const rows = document.querySelectorAll("#dataTable tbody tr");
+            rows.forEach((r) => {
+              const vals = Array.from(r.querySelectorAll("input")).map((i) =>
+                Number(i.value),
+              );
+              data.push(vals);
+            });
+            return data;
+          }
+
+          function createBoundsInputs() {
+            const container = document.querySelector("#bounds .bounds-grid");
+            container.innerHTML = "";
+            Object.entries(modelParameters).forEach(([model, params]) => {
+              const block = document.createElement("div");
+              block.className = "bounds-block";
+              block.setAttribute("data-model", model);
+
+              const h3 = document.createElement("h3");
+              h3.textContent = model.charAt(0).toUpperCase() + model.slice(1);
+              block.appendChild(h3);
+
+              const table = document.createElement("table");
+              table.className = "bounds-table abnt-table";
+
+              const thead = document.createElement("thead");
+              thead.innerHTML =
+                "<tr><th>Parameter</th><th>Minimum</th><th>Maximum</th><th></th></tr>";
+              table.appendChild(thead);
+
+              const tbody = document.createElement("tbody");
+              params.forEach((param) => {
+                const displayInfo = getParamDisplayInfo(param.key, model);
+                const row = document.createElement("tr");
+                row.className = "param-row";
+
+                const nameCell = document.createElement("td");
+                nameCell.className = "param-name";
+                katex.render(displayInfo.latex, nameCell, {
+                  throwOnError: false,
+                });
+                row.appendChild(nameCell);
+
+                const minCell = document.createElement("td");
+                const minInput = document.createElement("input");
+                minInput.type = "number";
+                minInput.className = "min";
+                minInput.value = param.bounds[0];
+                minInput.placeholder = "min";
+                minCell.appendChild(minInput);
+                row.appendChild(minCell);
+
+                const maxCell = document.createElement("td");
+                const maxInput = document.createElement("input");
+                maxInput.type = "number";
+                maxInput.className = "max";
+                maxInput.value = param.bounds[1];
+                maxInput.placeholder = "max";
+                maxCell.appendChild(maxInput);
+                row.appendChild(maxCell);
+
+                const unitCell = document.createElement("td");
+                unitCell.className = "param-unit";
+                const unitInfo = displayInfo;
+                if (unitInfo.unitLatex && typeof katex !== "undefined") {
+                  katex.render(unitInfo.unitLatex, unitCell, { throwOnError: false });
+                } else if (unitInfo.unitText) {
+                  unitCell.textContent = unitInfo.unitText;
+                } else {
+                  unitCell.textContent = "—";
+                  unitCell.classList.add("param-unit--dimensionless");
+                }
+                row.appendChild(unitCell);
+
+                tbody.appendChild(row);
+              });
+
+              table.appendChild(tbody);
+              block.appendChild(table);
+              container.appendChild(block);
+            });
+          }
+
+          function collectBounds() {
+            const bounds = {};
+            document
+              .querySelectorAll("#bounds .bounds-block")
+              .forEach((block) => {
+                const model = block.getAttribute("data-model");
+                bounds[model] = [];
+                block.querySelectorAll(".param-row").forEach((row) => {
+                  const min = Number(row.querySelector(".min").value);
+                  const max = Number(row.querySelector(".max").value);
+                  bounds[model].push([min, max]);
+                });
+              });
+            return bounds;
+          }
+
+          function collectAlg() {
+            return {
+              particles: Number(document.getElementById("particles").value),
+              c1: Number(document.getElementById("c1").value),
+              c2: Number(document.getElementById("c2").value),
+              w: Number(document.getElementById("w").value),
+              iterations: Number(document.getElementById("iterations").value),
+            };
+          }
+
+          document.getElementById("addRow").addEventListener("click", addRow);
+          document
+            .getElementById("removeRow")
+            .addEventListener("click", removeRow);
+          document
+            .getElementById("runButton")
+            .addEventListener("click", async () => {
+              const progress = document.getElementById("progressBar");
+              resultsSection?.classList.remove("hidden");
+              document
+                .querySelectorAll('[id$="Param"]')
+                .forEach((div) => (div.innerHTML = ""));
+              document.getElementById("comparison").innerHTML = "";
+              progress.value = 0;
+              progress.style.display = "block";
+              const data = collectData();
+              const alg = collectAlg();
+              const bounds = collectBounds();
+              await main(data, {
+                alg,
+                bounds,
+                onProgress: (i, total) => {
+                  progress.max = total;
+                  progress.value = i;
+                  if (i === total) {
+                    progress.style.display = "none";
+                  }
+                },
+              });
+              renderMathInElement(document.body);
+            });
+
+          async function loadInitialData() {
+            try {
+              const response = await fetch(defaultDataUrl);
+              if (!response.ok) {
+                throw new Error(`Failed to load data: ${response.status}`);
+              }
+              const json = await response.json();
+              const parsedData = [dataHeader];
+              json.forEach((entry) => {
+                const row = [
+                  Number(entry.tempo_h),
+                  Number(entry.substrato_S_gL),
+                  Number(entry.celulas_X_gL),
+                ];
+                parsedData.push(row);
+              });
+              populateTable(parsedData);
+            } catch (error) {
+              console.error("Unable to load the default data.", error);
+              populateTable(demoData);
+            }
+          }
+
+          createBoundsInputs();
+          loadInitialData();
+        </script>
+      </form>
+    </div>
+  </body>
+</html>

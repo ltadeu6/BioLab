@@ -1,0 +1,27 @@
+{
+  "name": "com.tadeu.biolab",
+  "displayName": "BioLab",
+  "version": "1.0.0",
+  "description": "A sample Apache Cordova application for BioLab.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lucas Tadeu Marculino",
+  "license": "MIT",
+  "devDependencies": {
+    "cordova-electron": "^4.0.0",
+    "electron": "^39.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "cordova": {
+    "platforms": [
+      "electron"
+    ]
+  },
+  "win": {
+    "target": [
+      "nsis"
+    ]
+  }
+}
