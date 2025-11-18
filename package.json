@@ -10,13 +10,15 @@
   "author": "Lucas Tadeu Marculino",
   "license": "MIT",
   "devDependencies": {
+    "cordova-android": "^14.0.1",
     "cordova-electron": "^4.0.0",
     "electron": "^39.2.1",
     "electron-builder": "^26.0.12"
   },
   "cordova": {
     "platforms": [
-      "electron"
+      "electron",
+      "android"
     ]
   },
   "build": {
