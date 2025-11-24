@@ -14,11 +14,11 @@
 
     <!-- ICON FOR ELECTRON -->
     <platform name="electron">
-        <icon src="resources/icon.png" width="512" height="512" />
+        <icon src="res/icon.png" width="512" height="512" />
         <preference name="ElectronSettingsFilePath" value="res/electron/settings.json" />
 
     </platform>
-    <icon src="resources/icon.png" />
+    <icon src="res/icon.png" />
 
     <preference name="ZoomControls" value="true" />
 
