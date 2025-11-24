@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+	{
+		"label": "Run Cordova App (electron)",
+		"type": "shell",
+		"command": "cordova run electron",
+		"group": {
+			"kind": "build",
+			"isDefault": true
+		},
+		"problemMatcher": []
+	},
+	{
+		"label": "Build Release (electron)",
+		"type": "shell",
+		"command": "cordova build electron --release --verbose",
+		"group": "build",
+		"problemMatcher": []
+	}
+]
+}
