@@ -16,5 +16,8 @@
     <platform name="electron">
         <icon src="resources/icon.png" width="512" height="512" />
     </platform>
+    <icon src="resources/icon.png" />
+
+    <preference name="ZoomControls" value="true" />
 
 </widget>
