@@ -44,12 +44,7 @@ export class PSO {
   run(c1, c2, w, iteration) {
     for (let i = 0; i < iteration; i++) {
       this.update(c1, c2, w);
-      // console.log(i, "/", iteration, "\t", this.err_best_g);
     }
-
-    console.log(this.pos_best_g);
-    // console.log(this.err_best_g)
-    // console.table(this.pos)
   }
 
   update(c1, c2, w) {

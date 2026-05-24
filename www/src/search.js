@@ -13,7 +13,7 @@ import {
 } from "./conhecidos.js";
 import "https://cdn.plot.ly/plotly-2.29.1.min.js";
 
-const parameterCatalog = {
+export const parameterCatalog = {
   K_S: {
     latex: "K_S",
     unitText: "g/L",
@@ -63,7 +63,7 @@ const parameterCatalog = {
   },
 };
 
-const modelParameters = {
+export const modelParameters = {
   aiba: [
     { key: "K_S", bounds: [0.005, 2] },
     { key: "mu_max", bounds: [0.05, 0.9] },
@@ -112,7 +112,7 @@ const modelParameters = {
   ],
 };
 
-function getParamDisplayInfo(paramKey, modelKey) {
+export function getParamDisplayInfo(paramKey, modelKey) {
   const baseInfo = parameterCatalog[paramKey];
   if (!baseInfo) {
     throw new Error(`Unknown parameter: ${paramKey}`);

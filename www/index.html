@@ -253,7 +253,7 @@
         </div>
 
         <script type="module">
-          import { main } from "./src/search.js";
+          import { main, parameterCatalog, modelParameters, getParamDisplayInfo } from "./src/search.js";
 
           const measurementUnits = {
             time: "h",
@@ -266,117 +266,6 @@
             `substrate (${measurementUnits.substrate})`,
             `cells (${measurementUnits.cells})`,
           ];
-
-          const parameterCatalog = {
-            K_S: {
-              latex: "K_S",
-              unitText: "g/L",
-              unitLatex: "\\mathrm{g\\,L^{-1}}",
-              overrides: {
-                contois: {
-                  unitText: "g_S/g_X",
-                  unitLatex: "\\frac{\\mathrm{g}_{S}}{\\mathrm{g}_{X}}",
-                },
-              },
-            },
-            mu_max: {
-              latex: "\\mu_{max}",
-              unitText: "h⁻¹",
-              unitLatex: "\\mathrm{h^{-1}}",
-            },
-            K_I: {
-              latex: "K_I",
-              unitText: "g/L",
-              unitLatex: "\\mathrm{g\\,L^{-1}}",
-              overrides: {
-                aiba: {
-                  unitText: "L/g",
-                  unitLatex: "\\mathrm{L\\,g^{-1}}",
-                },
-              },
-            },
-            m_S: {
-              latex: "m_S",
-              unitText: "g_S/(g_X·h)",
-              unitLatex: "\\frac{\\mathrm{g}_{S}}{\\mathrm{g}_{X}\\,\\mathrm{h}}",
-            },
-            Y_XS: {
-              latex: "Y_{XS}",
-              unitText: "g_X/g_S",
-              unitLatex: "\\frac{\\mathrm{g}_{X}}{\\mathrm{g}_{S}}",
-            },
-            T: {
-              latex: "T",
-              unitText: "h",
-              unitLatex: "\\mathrm{h}",
-            },
-            n: {
-              latex: "n",
-              unitText: null,
-              unitLatex: null,
-            },
-          };
-
-          const modelParameters = {
-            aiba: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.05, 0.9] },
-              { key: "K_I", bounds: [0.01, 1] },
-              { key: "m_S", bounds: [0.0015, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-            andrews: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.05, 0.9] },
-              { key: "K_I", bounds: [5, 150] },
-              { key: "m_S", bounds: [0.0015, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-            bergter: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.05, 0.9] },
-              { key: "T", bounds: [5, 80] },
-              { key: "m_S", bounds: [0.0015, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-            contois: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.05, 0.9] },
-              { key: "m_S", bounds: [0.0015, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-            monod: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.05, 0.9] },
-              { key: "m_S", bounds: [0.0015, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-            moser: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.05, 0.9] },
-              { key: "n", bounds: [0.8, 2.5] },
-              { key: "m_S", bounds: [0.0015, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-            tessier: [
-              { key: "K_S", bounds: [0.005, 2] },
-              { key: "mu_max", bounds: [0.2, 0.9] },
-              { key: "m_S", bounds: [0.005, 0.05] },
-              { key: "Y_XS", bounds: [0.3, 0.7] },
-            ],
-          };
-
-          function getParamDisplayInfo(paramKey, modelKey) {
-            const baseInfo = parameterCatalog[paramKey];
-            if (!baseInfo) {
-              throw new Error(`Unknown parameter: ${paramKey}`);
-            }
-            const override = baseInfo.overrides?.[modelKey];
-            if (!override) {
-              return baseInfo;
-            }
-            return { ...baseInfo, ...override };
-          }
 
           const demoData = [
             dataHeader,
