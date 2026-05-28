@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.tadeu.biolab" version="1.0.0">
+<widget id="dev.tadix.biolab" version="1.0.0">
 
     <name>BioLab</name>
     <description>BioLab Parameter Explorer</description>

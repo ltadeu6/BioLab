@@ -1,0 +1,20 @@
+{
+    "appId": "dev.tadix.biolab",
+    "productName": "BioLab",
+    "directories": {
+        "buildResources": "res"
+    },
+    "linux": {
+        "target": "AppImage",
+        "icon": "res/icon.png",
+        "category": "Science"
+    },
+    "win": {
+        "target": "nsis",
+        "icon": "res/icon.ico"
+    },
+    "nsis": {
+        "oneClick": false,
+        "allowToChangeInstallationDirectory": true
+    }
+}
