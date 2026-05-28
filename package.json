@@ -24,14 +24,23 @@
     ]
   },
   "build": {
-    "appId": "com.tadeu.biolab",
+    "appId": "dev.tadix.biolab",
     "productName": "BioLab",
     "directories": {
-      "buildResources": "resources"
+      "buildResources": "res"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "res/icon.png",
+      "category": "Science"
     },
     "win": {
       "target": "nsis",
-      "icon": "resources/icon.ico"
+      "icon": "res/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }

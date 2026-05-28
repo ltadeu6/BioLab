@@ -2,7 +2,9 @@
     "appId": "dev.tadix.biolab",
     "productName": "BioLab",
     "directories": {
-        "buildResources": "res"
+        "buildResources": "res",
+        "app": "platforms/electron/www",
+        "output": "platforms/electron/build"
     },
     "linux": {
         "target": "AppImage",
