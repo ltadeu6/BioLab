@@ -24,11 +24,50 @@ Tests use Node.js directly — no test runner or build step needed.
 ### Run / build (Electron)
 
 ```sh
-cordova run electron           # dev run
-cordova build electron --release --verbose   # release build
+nix-shell --run "cordova run electron"           # dev run
 ```
 
-### Run on Android
+Release build produces an AppImage (Linux) in two steps — cordova-electron bundles electron-builder v24 which ignores the Linux target, so electron-builder v26 from devDependencies is called directly:
+
+```sh
+nix-shell --run "cordova build electron --release"   # prepare platform
+nix-shell --run "node_modules/.bin/electron-builder --linux AppImage --config res/electron/build.json"
+# output: platforms/electron/build/BioLab-1.0.0.AppImage
+```
+
+### Build release APK (Android)
+
+Signing keys are managed via agenix (`android-signing-env`). Use `--packageType=apk` to force APK output instead of AAB:
+
+```sh
+android-signing-env python3 -c "
+import json, os
+cfg = {'android': {'release': {
+    'keystore': os.environ['ANDROID_KEYSTORE_PATH'],
+    'keystoreType': 'pkcs12',
+    'alias': os.environ['ANDROID_KEY_ALIAS'],
+    'storePassword': os.environ['ANDROID_KEYSTORE_PASSWORD'],
+    'password': os.environ['ANDROID_KEY_PASSWORD']
+}}}
+open('/tmp/biolab-build.json','w').write(__import__('json').dumps(cfg))
+"
+nix-shell --run "ANDROID_HOME=\$HOME/Android/Sdk ANDROID_SDK_ROOT=\$HOME/Android/Sdk \
+  GRADLE_USER_HOME=\$(pwd)/.gradle \
+  cordova build android --release --buildConfig /tmp/biolab-build.json -- --packageType=apk"
+rm /tmp/biolab-build.json
+# output: platforms/android/app/build/outputs/apk/release/app-release.apk
+```
+
+### Build release .exe (Windows VM)
+
+```sh
+# VM: user@192.168.122.187, cordova global at C:\Users\User\AppData\Roaming\npm\cordova.cmd
+ssh user@192.168.122.187 "cd C:\\Users\\user\\BioLab && git pull && C:\\Users\\User\\AppData\\Roaming\\npm\\cordova.cmd build electron --release"
+scp "user@192.168.122.187:C:/Users/user/BioLab/platforms/electron/build/BioLab Setup 1.0.0.exe" /tmp/
+# output: /tmp/BioLab Setup 1.0.0.exe
+```
+
+### Run on Android (dev)
 
 ```sh
 # Set up environment first (or source env.sh):
@@ -57,7 +96,6 @@ www/
     search.js       — orchestrates everything: builds ODE functions (model × Pirt coupling),
                        runs PSO per model, renders Plotly charts, computes AIC, sorts results
     rrandom.js      — Math.random wrapper used by PSO
-    solve.js        — standalone legacy helper (not imported by search.js)
   tests/
     demo.mjs              — smoke test: PSO converges to a finite error
     synthetic-search.mjs  — accuracy test: PSO recovers known Monod params from synthetic data
@@ -82,4 +120,3 @@ www/
 - External CDN dependencies: KaTeX (math rendering), Plotly (charts). Both are loaded in `index.html`; `search.js` assumes `Plotly` and `katex` are globals.
 - The `Objective` constructor detects column order from header keywords (Portuguese and English), so column order in the data table matters only when headers are absent or unrecognized.
 - `PSO` uses `Math.random` directly — `synthetic-search.mjs` patches it with a deterministic LCG for reproducible test results.
-- `solve.js` is a legacy standalone function that references globals (`RK4`, `Plotly`, `document`) and is not imported anywhere in the current codebase.

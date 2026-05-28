@@ -2,7 +2,13 @@
 
 Ferramenta web para estimativa de parâmetros cinéticos de crescimento microbiano e consumo de substrato.
 
-Acesse em: **[biolab.tadix.dev](https://biolab.tadix.dev)**
+Acesse em: **[biolab.tadix.dev](https://biolab.tadix.dev)** — ou baixe o app para desktop/Android:
+
+| Plataforma | Download |
+|---|---|
+| Linux (AppImage) | [BioLab-1.0.0.AppImage](https://git.tadix.dev/ltadeu6/BioLab/releases/tag/v1.0.0) |
+| Windows (instalador) | [BioLab-Setup-1.0.0.exe](https://git.tadix.dev/ltadeu6/BioLab/releases/tag/v1.0.0) |
+| Android (APK) | [BioLab-1.0.0.apk](https://git.tadix.dev/ltadeu6/BioLab/releases/tag/v1.0.0) |
 
 ## Como funciona
 
